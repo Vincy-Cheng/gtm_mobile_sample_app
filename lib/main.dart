@@ -58,12 +58,70 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  String _message = '';
 
-  void _incrementCounter() {
+  void setMessage(String message) {
     setState(() {
-      _counter++;
+      _message = message;
     });
+  }
+
+  // GA4 related functions
+  Future<void> _sendAnalyticsEvent() async {
+    // Only strings and numbers (longs & doubles for android, ints and doubles for iOS) are supported for GA custom event parameters:
+    // https://firebase.google.com/docs/reference/ios/firebaseanalytics/api/reference/Classes/FIRAnalytics#+logeventwithname:parameters:
+    // https://firebase.google.com/docs/reference/android/com/google/firebase/analytics/FirebaseAnalytics#public-void-logevent-string-name,-bundle-params
+    await widget.analytics.logEvent(
+      name: 'test_event',
+      parameters: <String, dynamic>{
+        'string': 'string',
+        'int': 42,
+        'long': 12345678910,
+        'double': 42.0,
+        // Only strings and numbers (ints & doubles) are supported for GA custom event parameters:
+        // https://developers.google.com/analytics/devguides/collection/analyticsjs/custom-dims-mets#overview
+        'bool': true.toString(),
+      },
+    );
+
+    setMessage('logEvent succeeded');
+  }
+
+  Future<void> _testSetUserId() async {
+    await widget.analytics.setUserId(id: 'some-user');
+    setMessage('setUserId succeeded');
+  }
+
+  Future<void> _testSetUserProperty() async {
+    await widget.analytics.setUserProperty(name: 'regular', value: 'indeed');
+    setMessage('setUserProperty succeeded');
+  }
+
+  // Can set parameters for the event for dynamic case
+  // Create variables in the GTM container
+  // GTM related functions
+  Future<void> _addGTMEvent() async {
+    await widget.analytics.logEvent(
+      name: 'test_adding_event',
+    );
+
+    setMessage('Added GTM Event');
+  }
+
+  Future<void> _modifyGTMEvent() async {
+    await widget.analytics.logEvent(
+      name: 'test_modify_event',
+    );
+
+    setMessage('Modified GTM Event, changed event name to Modified_Event');
+  }
+
+  Future<void> _blockGTMEvent() async {
+    await widget.analytics.logEvent(
+      name: 'test_block_event',
+    );
+
+    setMessage('Blocked GTM Event. This event would not be sent to GA4');
   }
 
   @override
@@ -77,21 +135,49 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            MaterialButton(
+              onPressed: _sendAnalyticsEvent,
+              child: const Text('Test logEvent'),
+            ),
+            MaterialButton(
+              onPressed: _testSetUserId,
+              child: const Text('Test setUserId'),
+            ),
+            MaterialButton(
+              onPressed: _testSetUserProperty,
+              child: const Text('Test setUserProperty'),
+            ),
+            MaterialButton(
+              onPressed: _addGTMEvent,
+              child: const Text('Test GTM Add event'),
+            ),
+            MaterialButton(
+              onPressed: _modifyGTMEvent,
+              child: const Text('Test GTM Modify event'),
+            ),
+            MaterialButton(
+              onPressed: _blockGTMEvent,
+              child: const Text('Test GTM Block event'),
             ),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              _message,
+              style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0)),
             ),
+            // const Text(
+            //   'You have pushed the button this many times:',
+            // ),
+            // Text(
+            //   '$_counter',
+            //   style: Theme.of(context).textTheme.headlineMedium,
+            // ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

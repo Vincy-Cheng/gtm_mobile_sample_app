@@ -1,6 +1,6 @@
 # gtm_mobile_sample_app
 
-This project is an example to configure GTM (Google Tag Manager) on app
+This project is an example to configure GTM (Google Tag Manager) on app. Also, is an example to log event to GA4 (Google Analytics 4)
 
 ## Getting Started
 
